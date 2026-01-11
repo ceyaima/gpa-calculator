@@ -44,20 +44,9 @@
             /* transition removed from here */
         }
 
-        main {
-            animation: slideInFromTop 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            perspective: 2000px;
-            padding: 2rem;
-            /* Added transition here */
-            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
         /* This now only targets the main element */
         .fade-out-down {
+            animation: none !important; /* This "kills" the entry animation hold */
             opacity: 0 !important;
             transform: translateY(40px) !important;
             pointer-events: none;
@@ -111,12 +100,14 @@
 
         /* 3D Scene Setup */
         main {
+            animation: slideInFromTop 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             perspective: 2000px;
             padding: 2rem;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .scene {
@@ -432,5 +423,6 @@
     </script>
 </body>
 </html>
+
 
 
