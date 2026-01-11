@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gpa_calculator</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/mono.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-1: oklch(19% 0 0);
+            --bg-2: oklch(23% 0 0);
+            --bg-3: oklch(27% 0 0);
+            --txt-1: oklch(90% 0 0);
+            --txt-2: oklch(75% 0 0);
+            --txt-3: oklch(50% 0 0);
+            --txt-4: oklch(40% 0 0);
+            --font-family: 'Geist Mono', monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-1);
+            color: var(--txt-2);
+            font-family: var(--font-family);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* transition removed from here */
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 2000px;
+            padding: 2rem;
+            /* Added transition here */
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* This now only targets the main element */
+        .fade-out-down {
+            opacity: 0 !important;
+            transform: translateY(40px) !important;
+            pointer-events: none;
+        }
+
+        /* Navigation Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-text {
+            color: var(--txt-2);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .logo-text:hover { color: var(--txt-1); }
+
+        .socials-container {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background-color: var(--bg-2);
+            color: var(--txt-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .social-circle:hover { background-color: var(--bg-3); color: var(--txt-1); }
+
+        .icon { fill: var(--txt-2); width: 60%; height: 60%; }
+
+        /* 3D Scene Setup */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 2000px;
+            padding: 2rem;
+        }
+
+        .scene {
+            width: 100%;
+            max-width: 500px;
+            perspective: 2000px;
+        }
+
+        .panel-wrapper {
+            position: relative;
+            width: 100%;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .panel-wrapper.is-flipped { transform: rotateY(180deg); }
+
+        .card-front, .card-back {
+            width: 100%;
+            backface-visibility: hidden;
+            background-color: var(--bg-1);
+        }
+
+        .card-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: rotateY(180deg);
+        }
+
+        .panel {
+            position: relative;
+            border: 2px solid var(--bg-3);
+            padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+        }
+
+        .panel-label {
+            position: absolute;
+            top: -14px;
+            left: 20px;
+            background-color: var(--bg-1);
+            color: var(--txt-4);
+            padding: 0 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: lowercase;
+            z-index: 10;
+        }
+
+        .input-header {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 30px;
+            gap: 10px;
+            color: var(--txt-4);
+            font-size: 1rem;
+            text-align: center;
+            padding: 0 5px;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 30px;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .tui-input, .tui-select {
+            background: var(--bg-2);
+            border: 1px solid var(--bg-3);
+            color: var(--txt-2);
+            font-family: var(--font-family);
+            padding: 8px;
+            width: 100%;
+            outline: none;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .tui-input:focus, .tui-select:focus { border-color: var(--txt-4); color: var(--txt-1); }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: oklch(60% 0.15 20);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            transition: 0.2s;
+            padding: 0;
+        }
+
+        .delete-btn:hover { color: oklch(70% 0.2 20); transform: scale(1.2); }
+
+        .action-btn {
+            background: var(--bg-2);
+            border: 2px solid var(--bg-3);
+            color: var(--txt-2);
+            font-family: var(--font-family);
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: lowercase;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover { background: var(--bg-3); color: var(--txt-1); border-color: var(--txt-4); }
+
+        .add-row-btn {
+            border: 1px dashed var(--bg-3);
+            background: transparent;
+            color: var(--txt-4);
+            cursor: pointer;
+            padding: 8px;
+            font-family: var(--font-family);
+        }
+
+        .add-row-btn:hover { color: var(--txt-2); border-color: var(--txt-4); }
+
+        #result {
+            margin-top: 5px;
+            padding: 15px;
+            background: var(--bg-2);
+            border-left: 4px solid var(--bg-3);
+        }
+
+        .gpa-display { font-size: 1.6rem; font-weight: 800; color: var(--txt-1); }
+
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+
+        .criteria-item { padding: 4px; border-bottom: 1px solid var(--bg-2); font-size: 1rem; }
+        .criteria-head { font-weight: bold; color: var(--txt-4); border-bottom: 1px solid var(--bg-3); font-size: 0.95rem; padding-bottom: 4px; }
+
+        .scrollbox { max-height: 280px; overflow-y: auto; padding-right: 5px; }
+
+        .calculate { background-color: var(--bg-1); border-color: var(--txt-3); color: var(--txt-1); transition: 0.2s; opacity: 0.9; }
+        .calculate:hover { border-color: oklch(60% 0.15 20); color: white; background-color: oklch(60% 0.15 20); }
+
+        .footer-text { text-align: center; color: var(--txt-4); font-size: 0.8rem; margin-top: 10px; }
+
+        .scrollbox::-webkit-scrollbar { width: 4px; }
+        .scrollbox::-webkit-scrollbar-thumb { background: var(--bg-3); }
+
+        .icon {
+            filter: invert(80%);
+            width:60%;
+            height:60%;
+        }
+
+        @media (max-width: 480px) {
+            .input-group, .input-header { grid-template-columns: 1fr 1fr 26px; }
+            .delete-btn svg { width: 20px; height: 20px; }
+            header { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-text" onclick="goHome()">&#123; alt + H &#125;</div>
+        <div class="socials-container">
+            <a href="https://github.com/ceyaima" class="social-circle">
+                <img src="https://ceyaima.github.io/icons/github.svg" class="icon" alt="GitHub">
+            </a>
+            <a href="https://discord.com/users/86728959227618920" class="social-circle">
+                <img src="https://ceyaima.github.io/icons/discord.svg" class="icon" alt="Discord">
+            </a>
+            <a href="https://anilist.me/croixph" class="social-circle">
+                <img src="https://ceyaima.github.io/icons/anilist.svg" class="icon" alt="AniList">
+            </a>
+            <a href="mailto:candice.karyanta@gmail.com" class="social-circle">
+                <img src="https://ceyaima.github.io/icons/gmail.svg" class="icon" alt="Gmail">
+            </a>
+        </div>
+    </header>
+
+    <main id="scene-main">
+        <div class="scene">
+            <div class="panel-wrapper" id="main-card">
+                
+                <!-- FRONT: Calculator -->
+                <div class="card-front">
+                    <div class="panel">
+                        <div class="panel-label">gpa_calculator</div>
+                        <div class="input-header"><span>credits</span><span>grade</span><span></span></div>
+                        <div id="subjects-container" class="scrollbox"></div>
+                        <button class="add-row-btn" onclick="addSubjectRow()">+ add subject</button>
+                        <button class="action-btn calculate" onclick="calculateGPA()">calculate ヾ(≧▽≦)ゝ</button>
+                        <div id="result">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.9rem;">calculated_gpa:</span>
+                                <span id="gpa-value" class="gpa-display">0.00</span>
+                            </div>
+                        </div>
+                        <button class="action-btn" onclick="toggleFlip()" style="font-size: 0.85rem; border-color: var(--bg-2); color: var(--txt-2);">
+                            [ view grading criteria ]
+                        </button>
+                        <div class="footer-text">made with existential dread by @ceyaima</div>
+                    </div>
+                </div>
+
+                <!-- BACK: Grading Criteria -->
+                <div class="card-back">
+                    <div class="panel">
+                        <div class="panel-label">grading_criteria</div>
+                        <div class="criteria-grid">
+                            <div class="criteria-head">grade</div><div class="criteria-head">pt</div>
+                            <div class="criteria-head">grade</div><div class="criteria-head">pt</div>
+                            <div class="criteria-item">A+</div><div class="criteria-item">4.3</div>
+                            <div class="criteria-item">C+</div><div class="criteria-item">2.3</div>
+                            <div class="criteria-item">A</div><div class="criteria-item">4.0</div>
+                            <div class="criteria-item">C</div><div class="criteria-item">2.0</div>
+                            <div class="criteria-item">A-</div><div class="criteria-item">3.7</div>
+                            <div class="criteria-item">C-</div><div class="criteria-item">1.7</div>
+                            <div class="criteria-item">B+</div><div class="criteria-item">3.3</div>
+                            <div class="criteria-item">D+</div><div class="criteria-item">1.3</div>
+                            <div class="criteria-item">B</div><div class="criteria-item">3.0</div>
+                            <div class="criteria-item">D</div><div class="criteria-item">1.0</div>
+                            <div class="criteria-item">B-</div><div class="criteria-item">2.7</div>
+                            <div class="criteria-item">F</div><div class="criteria-item">0.0</div>
+                        </div>
+                        <button class="action-btn" onclick="toggleFlip()" style="margin-top: 10px;">return to calculator</button>
+                        <div class="footer-text">made with existential dread by @ceyaima</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const GRADES = {
+            "A+": 4.3, "A": 4.0, "A-": 3.7, "B+": 3.3, "B": 3.0, 
+            "B-": 2.7, "C+": 2.3, "C": 2.0, "C-": 1.7, "D+": 1.3, 
+            "D": 1.0, "F": 0.0
+        };
+
+        let subjectCount = 0;
+        const container = document.getElementById('subjects-container');
+
+        function toggleFlip() { document.getElementById('main-card').classList.toggle('is-flipped'); }
+
+        function createRow(id) {
+            const options = Object.keys(GRADES).map(g => `<option value="${g}">${g}</option>`).join('');
+            return `
+                <div id="row-${id}" class="input-group" style="margin-bottom: 10px;">
+                    <input type="number" value="3" class="tui-input credit-input" />
+                    <select class="tui-select grade-input">
+                        <option value="" disabled selected>select</option>
+                        ${options}
+                    </select>
+                    <button class="delete-btn" onclick="removeRow(${id})"><i data-lucide="trash-2" style="width:18px"></i></button>
+                </div>
+            `;
+        }
+
+        function addSubjectRow() {
+            subjectCount++;
+            container.insertAdjacentHTML('beforeend', createRow(subjectCount));
+            lucide.createIcons();
+        }
+
+        function removeRow(id) {
+            document.getElementById(`row-${id}`).remove();
+            calculateGPA();
+        }
+
+        function calculateGPA() {
+            let totalWeightedPoints = 0;
+            let totalCredits = 0;
+            const rows = document.querySelectorAll('.input-group');
+            rows.forEach(row => {
+                const grade = row.querySelector('.grade-input').value;
+                const credit = parseFloat(row.querySelector('.credit-input').value);
+                if (grade && !isNaN(credit) && credit > 0) {
+                    totalWeightedPoints += (GRADES[grade] * credit);
+                    totalCredits += credit;
+                }
+            });
+            const display = document.getElementById('gpa-value');
+            display.textContent = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : "0.00";
+        }
+
+        function goHome() {
+            // Target only the main element
+            const mainContent = document.getElementById('scene-main');
+            mainContent.classList.add('fade-out-down');
+            
+            setTimeout(() => {
+                window.location.href = 'https://ceyaima.github.io'; 
+            }, 500);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.altKey && e.key.toLowerCase() === 'h') {
+                e.preventDefault();
+                goHome();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            addSubjectRow();
+            addSubjectRow();
+        });
+    </script>
+</body>
+</html>
