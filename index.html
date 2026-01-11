@@ -69,6 +69,7 @@
         .fade-out-down {
             animation: fadeOutDown 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
             pointer-events: none;
+            opacity: 0;
         }
 
         /* Navigation Header */
@@ -408,22 +409,32 @@
             display.textContent = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : "0.00";
         }
 
+        let isExiting = false;
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.altKey && e.code === 'KeyL') {
+                e.preventDefault();
+                
+                if (!isExiting) {
+                    isExiting = true;
+                    goHome();
+                }
+            }
+        });
+        
         function goHome() {
-            // Target only the main element
             const mainContent = document.getElementById('scene-main');
+            
+            mainContent.style.animation = 'none';
+            
+            void mainContent.offsetWidth; 
+            
             mainContent.classList.add('fade-out-down');
             
             setTimeout(() => {
                 window.location.href = 'https://ceyaima.github.io'; 
             }, 500);
         }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.altKey && e.key.toLowerCase() === 'l') {
-                e.preventDefault();
-                goHome();
-            }
-        });
 
         document.addEventListener('DOMContentLoaded', () => {
             addSubjectRow();
@@ -432,6 +443,7 @@
     </script>
 </body>
 </html>
+
 
 
 
